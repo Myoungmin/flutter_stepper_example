@@ -29,6 +29,7 @@ class StepperExampleState extends State<StepperExample> {
   int _totalSteps = 5;
   Timer? _timer;
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   void _startAutoProgress() {
     if (_totalSteps <= 0) return;
@@ -88,19 +89,31 @@ class StepperExampleState extends State<StepperExample> {
             Expanded(
               key: UniqueKey(),
               child: _totalSteps > 0
-                  ? Stepper(
-                      type: StepperType.horizontal,
-                      currentStep:
-                          _currentStep.clamp(0, _totalSteps - 1),
-                      steps: List.generate(
-                        _totalSteps,
-                        (index) => Step(
-                          title: Text("Step ${index + 1}"),
-                          content: Center(child: Text("${index + 1} 번째 단계")),
+                  ? Scrollbar(
+                      thumbVisibility: true,
+                      controller: _scrollController,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        controller: _scrollController,
+                        child: SizedBox(
+                          width: (_totalSteps * 100.0)
+                              .clamp(300.0, double.infinity),
+                          child: Stepper(
+                            type: StepperType.horizontal,
+                            currentStep: _currentStep.clamp(0, _totalSteps - 1),
+                            steps: List.generate(
+                              _totalSteps,
+                              (index) => Step(
+                                title: Text("Step ${index + 1}"),
+                                content:
+                                    Center(child: Text("${index + 1} 번째 단계")),
+                              ),
+                            ),
+                            controlsBuilder: (context, details) =>
+                                const SizedBox.shrink(),
+                          ),
                         ),
                       ),
-                      controlsBuilder: (context, details) =>
-                          const SizedBox.shrink(),
                     )
                   : const Center(child: Text("Step 개수를 입력하세요")),
             ),
