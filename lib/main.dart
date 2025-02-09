@@ -25,7 +25,7 @@ class StepperExample extends StatefulWidget {
 }
 
 class StepperExampleState extends State<StepperExample> {
-  int _currentStep = 0;
+  int _currentStep = 5;
   int _totalSteps = 5;
   Timer? _timer;
   final TextEditingController _controller = TextEditingController();
@@ -40,7 +40,7 @@ class StepperExampleState extends State<StepperExample> {
     });
 
     _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
-      if (_currentStep < _totalSteps - 1) {
+      if (_currentStep < _totalSteps) {
         setState(() {
           _currentStep++;
         });
@@ -76,7 +76,7 @@ class StepperExampleState extends State<StepperExample> {
                 final int steps = int.tryParse(value) ?? 5;
                 setState(() {
                   _totalSteps = steps;
-                  _currentStep = 0;
+                  _currentStep = _totalSteps;
                 });
               },
             ),
@@ -104,9 +104,15 @@ class StepperExampleState extends State<StepperExample> {
                             steps: List.generate(
                               _totalSteps,
                               (index) => Step(
+                                isActive: _currentStep >= index,
+                                state: _currentStep - 1 >= index
+                                    ? StepState.complete
+                                    : StepState.indexed,
                                 title: Text("Step ${index + 1}"),
-                                content:
-                                    Center(child: Text("${index + 1} 번째 단계")),
+                                content: Center(
+                                    child: Text(_currentStep == _totalSteps
+                                        ? "완료됨"
+                                        : "${index + 1} 번째 단계")),
                               ),
                             ),
                             controlsBuilder: (context, details) =>
