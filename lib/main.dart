@@ -43,6 +43,12 @@ class StepperExampleState extends State<StepperExample> {
       if (_currentStep < _totalSteps) {
         setState(() {
           _currentStep++;
+          double offset = _currentStep * 100.0;
+          _scrollController.animateTo(
+            offset.clamp(0.0, _scrollController.position.maxScrollExtent),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
         });
       } else {
         timer.cancel();
@@ -59,73 +65,78 @@ class StepperExampleState extends State<StepperExample> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Stepper Example")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _controller,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Step 개수 입력",
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                final int steps = int.tryParse(value) ?? 5;
-                setState(() {
-                  _totalSteps = steps;
-                  _currentStep = _totalSteps;
-                });
-              },
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _startAutoProgress,
-              child: const Text("시작"),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              key: UniqueKey(),
-              child: _totalSteps > 0
-                  ? Scrollbar(
-                      thumbVisibility: true,
-                      controller: _scrollController,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        controller: _scrollController,
-                        child: SizedBox(
-                          width: (_totalSteps * 100.0)
-                              .clamp(300.0, double.infinity),
-                          child: Stepper(
-                            type: StepperType.horizontal,
-                            currentStep: _currentStep.clamp(0, _totalSteps - 1),
-                            steps: List.generate(
-                              _totalSteps,
-                              (index) => Step(
-                                isActive: _currentStep >= index,
-                                state: _currentStep - 1 >= index
-                                    ? StepState.complete
-                                    : StepState.indexed,
-                                title: Text("Step ${index + 1}"),
-                                content: Center(
-                                    child: Text(_currentStep == _totalSteps
-                                        ? "완료됨"
-                                        : "${index + 1} 번째 단계")),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          appBar: AppBar(title: const Text("Stepper Example")),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _controller,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Step 개수 입력",
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (value) {
+                    final int steps = int.tryParse(value) ?? 5;
+                    setState(() {
+                      _totalSteps = steps;
+                      _currentStep = _totalSteps;
+                    });
+                  },
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: _startAutoProgress,
+                  child: const Text("시작"),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  key: ValueKey(_totalSteps),
+                  child: _totalSteps > 0
+                      ? Scrollbar(
+                          thumbVisibility: true,
+                          controller: _scrollController,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            controller: _scrollController,
+                            child: SizedBox(
+                              width: (_totalSteps * 100.0)
+                                  .clamp(300.0, double.infinity),
+                              child: Stepper(
+                                type: StepperType.horizontal,
+                                currentStep:
+                                    _currentStep.clamp(0, _totalSteps - 1),
+                                steps: List.generate(
+                                  _totalSteps,
+                                  (index) => Step(
+                                    isActive: _currentStep >= index,
+                                    state: _currentStep - 1 >= index
+                                        ? StepState.complete
+                                        : StepState.indexed,
+                                    title: Text("Step ${index + 1}"),
+                                    content: Center(
+                                        child: Text(_currentStep == _totalSteps
+                                            ? "완료됨"
+                                            : "${index + 1} 번째 단계")),
+                                  ),
+                                ),
+                                controlsBuilder: (context, details) =>
+                                    const SizedBox.shrink(),
                               ),
                             ),
-                            controlsBuilder: (context, details) =>
-                                const SizedBox.shrink(),
                           ),
-                        ),
-                      ),
-                    )
-                  : const Center(child: Text("Step 개수를 입력하세요")),
+                        )
+                      : const Center(child: Text("Step 개수를 입력하세요")),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
